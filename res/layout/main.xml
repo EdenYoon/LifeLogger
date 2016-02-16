@@ -12,4 +12,14 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/setting" />
+    <Button
+            android:id="@+id/force_speaker"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/force_speaker" />
+    <Button
+            android:id="@+id/cancel_force_use"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel_force_use" />
 </LinearLayout>

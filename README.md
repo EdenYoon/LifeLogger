@@ -1,1 +1,2 @@
-# LifeLogger
+# LifeLogging
+For my life logging

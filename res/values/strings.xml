@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">LifeLogging</string>
+    <string name="accessibility_service_on">AccessibilityService is on</string>
+    <string name="accessibility_service_off">AccessibilityService is off</string>
+    <string name="setting">Setting</string>
 </resources>

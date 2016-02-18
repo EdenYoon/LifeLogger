@@ -21,13 +21,17 @@ import android.view.accessibility.AccessibilityNodeInfo
 abstract class AccessibilityEventCaptureService : AccessibilityService() {
 
     private var mReceiver: BroadcastReceiver? = null
+    private var isEatKeyEvent: Boolean = true
 
     public override fun onKeyEvent(event: KeyEvent): Boolean {
         val action = event.action
         val keyCode = event.keyCode
-        if (action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_HEADSETHOOK) {
-            notify()
-            return true
+        if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK) {
+            if (action == KeyEvent.ACTION_UP)
+                notify()
+
+            if (isEatKeyEvent)
+                return true
         }
         return super.onKeyEvent(event)
     }
@@ -53,7 +57,7 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
         builder.setContentText("제목 하단에 출력될 내용!")
 
         // 알림시 사운드, 진동, 불빛을 설정 가능.
-        builder.setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_LIGHTS)
+        builder.setDefaults(Notification.DEFAULT_LIGHTS)
 
         // 알림 터치시 반응.
         builder.setContentIntent(pendingIntent)
@@ -120,13 +124,8 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
         val intentFilter = IntentFilter("com.humanebyte.lifelogging.eat_keyevent")
         mReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                val is_eat:Boolean = intent.getBooleanExtra("eat", true)
-                if (is_eat) {
-                    Log.d("~~~~~~~~", "~~~~~~~~~~ eat")
-                }
-                else {
-                    Log.d("~~~~~~~~~", "~~~~~~~~~~ bypass")
-                }
+                val isEat:Boolean = intent.getBooleanExtra("eat", true)
+                isEatKeyEvent = isEat
             }
         }
         this.registerReceiver(mReceiver, intentFilter)

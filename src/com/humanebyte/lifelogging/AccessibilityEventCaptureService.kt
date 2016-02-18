@@ -9,14 +9,18 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
 abstract class AccessibilityEventCaptureService : AccessibilityService() {
+
+    private var mReceiver: BroadcastReceiver? = null
 
     public override fun onKeyEvent(event: KeyEvent): Boolean {
         val action = event.action
@@ -109,6 +113,24 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_SPOKEN
         info.flags = AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
         serviceInfo = info
+
+        val intentFilter = IntentFilter("com.humanebyte.lifelogging.eat_keyevent")
+        mReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val is_eat:Boolean = intent.getBooleanExtra("eat", true)
+                if (is_eat) {
+                    Log.d("~~~~~~~~", "~~~~~~~~~~ eat")
+                }
+                else {
+                    Log.d("~~~~~~~~~", "~~~~~~~~~~ bypass")
+                }
+            }
+        }
+        this.registerReceiver(mReceiver, intentFilter)
+    }
+
+    override fun onDestroy() {
+        this.unregisterReceiver(this.mReceiver)
     }
 
     public override fun onGesture(gestureId: Int): Boolean {

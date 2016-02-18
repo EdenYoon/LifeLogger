@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -75,8 +76,12 @@ class MyActivity : Activity(), View.OnClickListener {
                 }
             }
             R.id.bypass_keyevent -> {
+                val i = Intent("com.humanebyte.lifelogging.eat_keyevent").putExtra("eat", false)
+                this.sendBroadcast(i)
             }
             R.id.eat_keyevent -> {
+                val i = Intent("com.humanebyte.lifelogging.eat_keyevent").putExtra("eat", true)
+                this.sendBroadcast(i)
             }
         }
     }

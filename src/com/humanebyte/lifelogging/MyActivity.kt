@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -16,12 +15,6 @@ class MyActivity : Activity(), View.OnClickListener {
     internal lateinit var button_cancel_force_use: Button
     internal lateinit var button_bypass_keyevent: Button
     internal lateinit var button_eat_keyevent: Button
-
-    internal val FOR_MEDIA = 1
-    internal val FORCE_NONE = 0
-    internal val FORCE_SPEAKER = 1
-
-    internal val setForceUse = Class.forName("android.media.AudioSystem").getMethod("setForceUse", Integer.TYPE, Integer.TYPE)
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,18 +55,12 @@ class MyActivity : Activity(), View.OnClickListener {
                 startActivity(accessibilityServiceIntent)
             }
             R.id.force_speaker -> {
-                try {
-                    setForceUse.invoke(null, FOR_MEDIA, FORCE_SPEAKER)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                val i = Intent("com.humanebyte.lifelogging.force_speaker").putExtra("force_speaker", true)
+                this.sendBroadcast(i)
             }
             R.id.cancel_force_use -> {
-                try {
-                    setForceUse.invoke(null, FOR_MEDIA, FORCE_NONE)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                val i = Intent("com.humanebyte.lifelogging.force_speaker").putExtra("force_speaker", false)
+                this.sendBroadcast(i)
             }
             R.id.bypass_keyevent -> {
                 val i = Intent("com.humanebyte.lifelogging.eat_keyevent").putExtra("eat", false)

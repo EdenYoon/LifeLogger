@@ -9,10 +9,7 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.util.Log
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
@@ -21,7 +18,15 @@ import android.view.accessibility.AccessibilityNodeInfo
 abstract class AccessibilityEventCaptureService : AccessibilityService() {
 
     private var mReceiver: BroadcastReceiver? = null
+    private var forceSpeakIntentReceiver: BroadcastReceiver? = null
+
     private var isEatKeyEvent: Boolean = true
+
+    internal val FOR_MEDIA = 1
+    internal val FORCE_NONE = 0
+    internal val FORCE_SPEAKER = 1
+
+    internal val setForceUse = Class.forName("android.media.AudioSystem").getMethod("setForceUse", Integer.TYPE, Integer.TYPE)
 
     public override fun onKeyEvent(event: KeyEvent): Boolean {
         val action = event.action
@@ -121,18 +126,30 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
         info.flags = AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
         serviceInfo = info
 
-        val intentFilter = IntentFilter("com.humanebyte.lifelogging.eat_keyevent")
         mReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val isEat:Boolean = intent.getBooleanExtra("eat", true)
                 isEatKeyEvent = isEat
             }
         }
-        this.registerReceiver(mReceiver, intentFilter)
+        this.registerReceiver(mReceiver, IntentFilter("com.humanebyte.lifelogging.eat_keyevent"))
+
+        forceSpeakIntentReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val force_speaker:Boolean = intent.getBooleanExtra("force_speaker", true)
+                if (force_speaker) {
+                    setForceUse.invoke(null, FOR_MEDIA, FORCE_SPEAKER)
+                } else {
+                    setForceUse.invoke(null, FOR_MEDIA, FORCE_NONE)
+                }
+            }
+        }
+        this.registerReceiver(forceSpeakIntentReceiver, IntentFilter("com.humanebyte.lifelogging.force_speaker"))
     }
 
     override fun onDestroy() {
         this.unregisterReceiver(this.mReceiver)
+        this.unregisterReceiver(this.forceSpeakIntentReceiver)
     }
 
     public override fun onGesture(gestureId: Int): Boolean {

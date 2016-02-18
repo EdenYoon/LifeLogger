@@ -26,44 +26,47 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
         val action = event.action
         val keyCode = event.keyCode
         if (action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_HEADSETHOOK) {
-            val pendingIntent = PendingIntent.getActivity(this, 0, Intent(this, AccessibilityEventCaptureService::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
-
-            val builder = Notification.Builder(this)
-
-            // 작은 아이콘 이미지.
-            builder.setSmallIcon(R.drawable.ic_launcher)
-
-            // 알림이 출력될 때 상단에 나오는 문구.
-            builder.setTicker("미리보기 입니다.")
-
-            // 알림 출력 시간.
-            builder.setWhen(System.currentTimeMillis())
-
-            // 알림 제목.
-            builder.setContentTitle("내용보다 조금 큰 제목!")
-
-            // 알림 내용.
-            builder.setContentText("제목 하단에 출력될 내용!")
-
-            // 알림시 사운드, 진동, 불빛을 설정 가능.
-            builder.setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_LIGHTS)
-
-            // 알림 터치시 반응.
-            builder.setContentIntent(pendingIntent)
-
-            // 알림 터치시 반응 후 알림 삭제 여부.
-            builder.setAutoCancel(true)
-
-            // 우선순위.
-            builder.setPriority(Notification.PRIORITY_MAX)
-
-            // 고유ID로 알림을 생성.
-            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            nm.notify(123456, builder.build())
-
+            notify()
             return true
         }
         return super.onKeyEvent(event)
+    }
+
+    private fun notify() {
+        val pendingIntent = PendingIntent.getActivity(this, 0, Intent(this, AccessibilityEventCaptureService::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val builder = Notification.Builder(this)
+
+        // 작은 아이콘 이미지.
+        builder.setSmallIcon(R.drawable.ic_launcher)
+
+        // 알림이 출력될 때 상단에 나오는 문구.
+        builder.setTicker("미리보기 입니다.")
+
+        // 알림 출력 시간.
+        builder.setWhen(System.currentTimeMillis())
+
+        // 알림 제목.
+        builder.setContentTitle("내용보다 조금 큰 제목!")
+
+        // 알림 내용.
+        builder.setContentText("제목 하단에 출력될 내용!")
+
+        // 알림시 사운드, 진동, 불빛을 설정 가능.
+        builder.setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_LIGHTS)
+
+        // 알림 터치시 반응.
+        builder.setContentIntent(pendingIntent)
+
+        // 알림 터치시 반응 후 알림 삭제 여부.
+        builder.setAutoCancel(true)
+
+        // 우선순위.
+        builder.setPriority(Notification.PRIORITY_MAX)
+
+        // 고유ID로 알림을 생성.
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.notify(123456, builder.build())
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {

@@ -6,4 +6,6 @@
     <string name="setting">Setting</string>
     <string name="force_speaker">Force to use Speaker</string>
     <string name="cancel_force_use">Cancel force use</string>
+    <string name="bypass_keyevent">Bypass KeyEvent</string>
+    <string name="eat_keyevent">Eat KeyEvent</string>
 </resources>

@@ -13,6 +13,8 @@ class MyActivity : Activity(), View.OnClickListener {
     internal lateinit var setting: Button
     internal lateinit var button_force_speaker: Button
     internal lateinit var button_cancel_force_use: Button
+    internal lateinit var button_bypass_keyevent: Button
+    internal lateinit var button_eat_keyevent: Button
 
     internal val FOR_MEDIA = 1
     internal val FORCE_NONE = 0
@@ -31,6 +33,10 @@ class MyActivity : Activity(), View.OnClickListener {
         button_force_speaker.setOnClickListener(this)
         button_cancel_force_use = findViewById(R.id.cancel_force_use) as Button
         button_cancel_force_use.setOnClickListener(this)
+        button_bypass_keyevent = findViewById(R.id.bypass_keyevent) as Button
+        button_bypass_keyevent.setOnClickListener(this)
+        button_eat_keyevent = findViewById(R.id.eat_keyevent) as Button
+        button_eat_keyevent.setOnClickListener(this)
     }
 
     override fun onResume() {
@@ -67,6 +73,10 @@ class MyActivity : Activity(), View.OnClickListener {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+            }
+            R.id.bypass_keyevent -> {
+            }
+            R.id.eat_keyevent -> {
             }
         }
     }

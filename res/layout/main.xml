@@ -22,4 +22,14 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/cancel_force_use" />
+    <Button
+            android:id="@+id/bypass_keyevent"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/bypass_keyevent" />
+    <Button
+            android:id="@+id/eat_keyevent"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/eat_keyevent" />
 </LinearLayout>

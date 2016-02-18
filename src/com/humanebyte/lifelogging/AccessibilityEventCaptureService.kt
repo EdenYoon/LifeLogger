@@ -6,12 +6,14 @@ package com.humanebyte.lifelogging
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.AlertDialog
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.*
 import android.util.Log
 import android.view.KeyEvent
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
@@ -19,6 +21,7 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
 
     private var mReceiver: BroadcastReceiver? = null
     private var forceSpeakIntentReceiver: BroadcastReceiver? = null
+    private var musicIntentReceiver: BroadcastReceiver? = null
 
     private var isEatKeyEvent: Boolean = true
 
@@ -145,11 +148,46 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
             }
         }
         this.registerReceiver(forceSpeakIntentReceiver, IntentFilter("com.humanebyte.lifelogging.force_speaker"))
+
+        musicIntentReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
+                    val state = intent.getIntExtra("state", -1)
+                    if (state == 1) {
+                        displayHeadphoneAlert()
+                    } else if (state == 0) {
+                        setForceUse.invoke(null, FOR_MEDIA, FORCE_NONE)
+                    }
+                }
+            }
+        }
+        registerReceiver(musicIntentReceiver, IntentFilter(Intent.ACTION_HEADSET_PLUG))
     }
 
     override fun onDestroy() {
         this.unregisterReceiver(this.mReceiver)
         this.unregisterReceiver(this.forceSpeakIntentReceiver)
+        this.unregisterReceiver(this.musicIntentReceiver)
+    }
+
+    private fun displayHeadphoneAlert() {
+        val builder = AlertDialog.Builder(this)
+        builder.setMessage("Is it headphone?").setCancelable(false).setPositiveButton("Yes",
+                object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, id: Int) {
+                        setForceUse.invoke(null, FOR_MEDIA, FORCE_NONE)
+                        dialog.cancel()
+                    }
+                }).setNegativeButton("No",
+                object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, id: Int) {
+                        setForceUse.invoke(null, FOR_MEDIA, FORCE_SPEAKER)
+                        dialog.cancel()
+                    }
+                })
+        val alert = builder.create()
+        alert.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        alert.show()
     }
 
     public override fun onGesture(gestureId: Int): Boolean {

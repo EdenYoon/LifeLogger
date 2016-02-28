@@ -11,11 +11,14 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.*
+import android.os.Handler
+import android.os.Message
 import android.util.Log
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.Toast
 
 abstract class AccessibilityEventCaptureService : AccessibilityService() {
 
@@ -25,23 +28,76 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
 
     private var isEatKeyEvent: Boolean = true
 
-    internal val FOR_MEDIA = 1
-    internal val FORCE_NONE = 0
-    internal val FORCE_SPEAKER = 1
+    private val FOR_MEDIA = 1
+    private val FORCE_NONE = 0
+    private val FORCE_SPEAKER = 1
 
-    internal val setForceUse = Class.forName("android.media.AudioSystem").getMethod("setForceUse", Integer.TYPE, Integer.TYPE)
+    private val setForceUse = Class.forName("android.media.AudioSystem").getMethod("setForceUse", Integer.TYPE, Integer.TYPE)
+
+    private val LONG_PRESS_PERIOD: Long = 400
+    private val BUTTON_PRESS_INTERVAL: Long = 200
+
+    private var timeKeyDown: Long = 0
+    private var timeKeyUp: Long = 0
+    private var clickSequence: String = ""
+
+    private val eventKeyUp = 1001
+    private val handlerKeyUp = object : Handler() {
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                eventKeyUp -> {
+                    handleClickSequence(clickSequence)
+                    clickSequence = ""
+                }
+            }
+        }
+
+        private fun handleClickSequence(seq: String) {
+            if (seq == "SS") {
+                Log.d(TAG, "~~~~~ handleClickSequence $seq")
+                Toast.makeText(this@AccessibilityEventCaptureService, "Flash On", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    private var messageKeyUp: Message? = null
 
     public override fun onKeyEvent(event: KeyEvent): Boolean {
         val action = event.action
         val keyCode = event.keyCode
+        //Log.d(TAG, "action: ${getActionName(action)}, keyCode: ${KeyEvent.keyCodeToString(keyCode)}")
         if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK) {
-            if (action == KeyEvent.ACTION_UP)
-                notify()
+            if (action === KeyEvent.ACTION_DOWN) {
+                handlerKeyUp.removeMessages(eventKeyUp)
+                timeKeyDown = System.currentTimeMillis()
+            }
+            else if (action == KeyEvent.ACTION_UP) {
+                timeKeyUp = System.currentTimeMillis()
+
+                if (timeKeyUp - timeKeyDown < LONG_PRESS_PERIOD)
+                    clickSequence += "S"
+                else
+                    clickSequence += "L"
+
+                messageKeyUp = handlerKeyUp.obtainMessage(eventKeyUp)
+                handlerKeyUp.sendMessageDelayed(messageKeyUp, BUTTON_PRESS_INTERVAL)
+
+                //notify()
+            }
 
             if (isEatKeyEvent)
                 return true
         }
+
         return super.onKeyEvent(event)
+    }
+
+    private fun getActionName(type: Int): String {
+        when (type) {
+            KeyEvent.ACTION_DOWN -> return "KeyEvent.ACTION_DOWN"
+            KeyEvent.ACTION_UP -> return "KeyEvent.ACTION_UP"
+            KeyEvent.ACTION_MULTIPLE -> return "KeyEvent.ACTION_MULTIPLE"
+        }
+        return "KeyEvent.Unknown"
     }
 
     private fun notify() {

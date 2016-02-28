@@ -11,6 +11,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.*
+import android.hardware.camera2.CameraManager
 import android.os.Handler
 import android.os.Message
 import android.util.Log
@@ -34,6 +35,8 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
 
     private val setForceUse = Class.forName("android.media.AudioSystem").getMethod("setForceUse", Integer.TYPE, Integer.TYPE)
 
+    private var cameraManager: CameraManager? = null
+
     private val LONG_PRESS_PERIOD: Long = 400
     private val BUTTON_PRESS_INTERVAL: Long = 200
 
@@ -53,13 +56,31 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
         }
 
         private fun handleClickSequence(seq: String) {
-            if (seq == "SS") {
-                Log.d(TAG, "~~~~~ handleClickSequence $seq")
-                Toast.makeText(this@AccessibilityEventCaptureService, "Flash On", Toast.LENGTH_LONG).show()
+            if (seq ==  "SS") {
+                Log.d(TAG, "~~~~ Camera Torch Mode On/Off. Will ${!torchMode}")
+                if (cameraManager != null) {
+                    cameraManager!!.setTorchMode(cameraManager!!.cameraIdList[0], !torchMode)
+                } else {
+                    torchMode = false
+                }
             }
         }
     }
     private var messageKeyUp: Message? = null
+
+    private var torchMode: Boolean = false
+    private val callbackTorch = object: CameraManager.TorchCallback() {
+        override fun onTorchModeChanged(cameraId: String?, enabled: Boolean) {
+            if (cameraManager != null && cameraManager!!.cameraIdList[0] == cameraId)
+                torchMode = enabled
+            super.onTorchModeChanged(cameraId, enabled)
+        }
+
+        override fun onTorchModeUnavailable(cameraId: String?) {
+            torchMode = false
+            super.onTorchModeUnavailable(cameraId)
+        }
+    }
 
     public override fun onKeyEvent(event: KeyEvent): Boolean {
         val action = event.action
@@ -218,12 +239,16 @@ abstract class AccessibilityEventCaptureService : AccessibilityService() {
             }
         }
         registerReceiver(musicIntentReceiver, IntentFilter(Intent.ACTION_HEADSET_PLUG))
+
+        cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        cameraManager?.registerTorchCallback(callbackTorch, null)
     }
 
     override fun onDestroy() {
         this.unregisterReceiver(this.mReceiver)
         this.unregisterReceiver(this.forceSpeakIntentReceiver)
         this.unregisterReceiver(this.musicIntentReceiver)
+        cameraManager = null
     }
 
     private fun displayHeadphoneAlert() {

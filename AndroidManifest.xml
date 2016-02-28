@@ -3,10 +3,11 @@
           package="com.humanebyte.lifelogging"
           android:versionCode="1"
           android:versionName="1.0">
-    <uses-sdk android:minSdkVersion="21"/>
+    <uses-sdk android:minSdkVersion="23"/>
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
         <activity android:name="com.humanebyte.lifelogging.MyActivity"
                   android:label="@string/app_name">
